@@ -129,7 +129,7 @@ class MapPageController extends GetxController with SingleGetTickerProviderMixin
         if (latLngPointsList.length != 0 && latLngPointsList.length > count + 1) {
           LatLng newLatlng = latLngPointsList[++count];
           double angle = bearingBetweenLocations(latLng, newLatlng);
-          print("CarAngle : $angle");
+          print("CarAngles : $angle");
           latLng = newLatlng;
           updateMarkerAndCircle(latLng, angle: angle);
           if (googleMapController != null) {
