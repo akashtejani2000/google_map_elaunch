@@ -1,25 +1,30 @@
 import 'dart:async';
 import 'dart:math' as Math;
+import 'dart:math' show cos, sqrt, asin;
 import 'dart:typed_data';
-import 'package:vector_math/vector_math.dart' as Math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:vector_math/vector_math.dart' as Math;
 
 class MapPageController extends GetxController with SingleGetTickerProviderMixin {
-  GoogleMapController googleMapController;
-  Set<Marker> markers = Set<Marker>();
+  GoogleMapController? googleMapController;
 
+  Set<Marker> markers = Set<Marker>();
   Set<Polyline> polyLineSet = Set<Polyline>();
 
-  LatLng latLng;
+  late LatLng latLng;
 
-  Uint8List imageData;
+  Uint8List? imageData;
   var count = 0;
+  late double angle;
 
-  AnimationController animationController;
+  double totalDistance = 0.0;
+  String placeDistance = "";
+
+  late AnimationController animationController;
 
   List<LatLng> latLngPointsList = [
     LatLng(21.22190131006155, 72.83836695702882),
@@ -93,7 +98,7 @@ class MapPageController extends GetxController with SingleGetTickerProviderMixin
 
   @override
   void onClose() {
-    googleMapController.dispose();
+    googleMapController!.dispose();
     super.onClose();
   }
 
@@ -104,6 +109,18 @@ class MapPageController extends GetxController with SingleGetTickerProviderMixin
     var sourceLatlng = this.latLng;
     var targetLatlng = latLngPointsList[count + 1];
 
+    totalDistance = coordinateDistance(
+      latLngPointsList.first.latitude,
+      latLngPointsList.first.longitude,
+      latLngPointsList.last.latitude,
+      latLngPointsList.last.longitude,
+    );
+
+    placeDistance = totalDistance.toStringAsFixed(2);
+
+    print("totalDistance => ${totalDistance.toString()}");
+    print("placeDistance =>$placeDistance");
+
     var latDifference = sourceLatlng.latitude - targetLatlng.latitude;
     var lngDifference = sourceLatlng.longitude - targetLatlng.longitude;
 
@@ -112,12 +129,7 @@ class MapPageController extends GetxController with SingleGetTickerProviderMixin
       sourceLatlng.longitude - (lngDifference * animationController.value),
     );
 
-    print("sourceLatlng ->$sourceLatlng");
-    print("targetLatlng -> $targetLatlng");
-    print("difference -> $latDifference  -> $lngDifference");
-    print("currentLatlng -> $currentLatlng");
-
-    double angle = bearingBetweenLocations(currentLatlng, targetLatlng);
+    angle = bearingBetweenLocations(currentLatlng, targetLatlng);
     print("angle : $angle");
     updateMarkerAndCircle(currentLatlng, angle: angle);
     moveCarCameraPosition(currentLatlng);
@@ -144,7 +156,7 @@ class MapPageController extends GetxController with SingleGetTickerProviderMixin
 
   void onMapCreate(GoogleMapController mapController) {
     googleMapController = mapController;
-    updateMarkerAndCircle(latLng);
+    updateMarkerAndCircle(latLng, angle: 0);
     animationController.forward(from: 0.0);
     update();
   }
@@ -154,56 +166,42 @@ class MapPageController extends GetxController with SingleGetTickerProviderMixin
     return byteData.buffer.asUint8List();
   }
 
-  void updateMarkerAndCircle(LatLng newLatLng, {double angle}) async {
-    markers.clear();
-
+  void updateMarkerAndCircle(LatLng newLatLng, {required double angle}) async {
     print("update : $angle");
-    markers.add(
-      Marker(
-        markerId: MarkerId('$newLatLng'),
-        infoWindow: InfoWindow(
-          title: '${newLatLng.toString()}',
-        ),
-        position: newLatLng,
-        draggable: true,
-        visible: true,
-        zIndex: 2,
-        anchor: Offset(1.0, 1.0),
-        rotation: angle,
-        icon: imageData != null ? BitmapDescriptor.fromBytes(imageData) : BitmapDescriptor.defaultMarker,
+    markers.add(Marker(
+      markerId: MarkerId('marker'),
+      infoWindow: InfoWindow(
+        title: '${newLatLng.toString()}',
       ),
-    );
+      position: newLatLng,
+      draggable: true,
+      visible: true,
+      flat: false,
+      anchor: Offset(0.5, 0.5),
+      rotation: angle,
+      icon: BitmapDescriptor.defaultMarker,
+    ));
     update();
   }
 
-  // void latLngPositionChange() async {
-  //   if (latLngPointsList.length != 0 && latLngPointsList.length > count + 1) {
-  //     latLng = latLngPointsList[++count];
-  //     updateMarkerAndCircle(latLng);
-  //     if (googleMapController != null) {
-  //       googleMapController.animateCamera(
-  //         CameraUpdate.newCameraPosition(
-  //           CameraPosition(
-  //             target: latLng,
-  //             zoom: 15,
-  //           ),
-  //         ),
-  //       );
-  //       update();
-  //     }
-  //   }
-  //   update();
-  // }
-
   moveCarCameraPosition(LatLng latLng) {
-    googleMapController.moveCamera(
+    googleMapController!.moveCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: latLng,
-          zoom: 16,
+          zoom: 19,
+          // bearing: angle,
+          // tilt: angle,
         ),
       ),
     );
+  }
+
+  double coordinateDistance(lat1, lon1, lat2, lon2) {
+    var p = 0.017453292519943295;
+    var c = cos;
+    var a = 0.5 - c((lat2 - lat1) * p) / 2 + c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
+    return 12742 * asin(sqrt(a));
   }
 
   double bearingBetweenLocations(LatLng latLng1, LatLng latLng2) {
@@ -220,9 +218,6 @@ class MapPageController extends GetxController with SingleGetTickerProviderMixin
 
     double brng = Math.atan2(y, x);
     brng = Math.degrees(brng);
-
-    // brng = brng / 180;
-    // brng = (brng + 360) % 360;
 
     print("bearingBetweenLocations : ${brng.toString()}");
 

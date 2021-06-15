@@ -21,31 +21,32 @@ class _GoogleMapDemoState extends State<GoogleMapDemo> {
     LatLng(21.2309532844579, 72.90081406264702),
     LatLng(21.23046307706666, 72.89874552144066),
   ];
-  BitmapDescriptor sourceIcon;
-  BitmapDescriptor destinationIcon;
-  PolylinePoints polylinePoints;
-  GoogleMapController _controller;
+
+  BitmapDescriptor? sourceIcon;
+  BitmapDescriptor? destinationIcon;
+  PolylinePoints? polylinePoints;
+  GoogleMapController? _controller;
   Set<Polyline> _polylines = Set<Polyline>();
   List<LatLng> polylineCoordinates = [];
 
-  LatLng latLng;
+  LatLng? latLng;
   int index = 0;
 
-  Marker marker;
-  Circle circle;
-  Timer timer;
-  CameraPosition initialLocation;
+  Marker? marker;
+  Circle? circle;
+  late Timer timer;
+  late CameraPosition initialLocation;
 
   @override
   void initState() {
     super.initState();
-    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+    SchedulerBinding.instance!.addPostFrameCallback((timeStamp) {
       setState(() {
         polylinePoints = PolylinePoints();
         latLng = la_lo_list[0];
         print("latLang :${latLng}");
         initialLocation = CameraPosition(
-          target: latLng,
+          target: latLng!,
           zoom: 15,
         );
       });
@@ -62,7 +63,7 @@ class _GoogleMapDemoState extends State<GoogleMapDemo> {
   @override
   void dispose() {
     timer.cancel();
-    _controller.dispose();
+    _controller!.dispose();
     super.dispose();
   }
 
@@ -76,8 +77,8 @@ class _GoogleMapDemoState extends State<GoogleMapDemo> {
         mapType: MapType.normal,
         initialCameraPosition: initialLocation,
         polylines: _polylines,
-        markers: Set.of((marker != null) ? [marker] : []),
-        circles: Set.of((circle != null) ? [circle] : []),
+        markers: Set.of((marker != null) ? [marker!] : []),
+        circles: Set.of((circle != null) ? [circle!] : []),
         onMapCreated: (GoogleMapController controller) {
           setState(() {
             _controller = controller;
@@ -93,12 +94,12 @@ class _GoogleMapDemoState extends State<GoogleMapDemo> {
     return byteData.buffer.asUint8List();
   }
 
-  void updateMarkerAndCirlcle(LatLng newLatLng) async {
+  void updateMarkerAndCirlcle(LatLng? newLatLng) async {
     Uint8List imageData = await getMarker();
     this.setState(() {
       marker = Marker(
           markerId: MarkerId("home"),
-          position: latLng,
+          position: latLng!,
           draggable: false,
           zIndex: 2,
           flat: true,
@@ -108,7 +109,7 @@ class _GoogleMapDemoState extends State<GoogleMapDemo> {
         circleId: CircleId("car"),
         zIndex: 1,
         strokeColor: Colors.redAccent,
-        center: latLng,
+        center: latLng!,
         fillColor: Colors.redAccent.withAlpha(50),
       );
     });
@@ -127,8 +128,8 @@ class _GoogleMapDemoState extends State<GoogleMapDemo> {
         index = index + 1;
         latLng = la_lo_list[index];
         if (_controller != null) {
-          _controller.animateCamera(CameraUpdate.newCameraPosition(new CameraPosition(
-            target: latLng,
+          _controller!.animateCamera(CameraUpdate.newCameraPosition(new CameraPosition(
+            target: latLng!,
             zoom: 17,
             bearing: 192.8334901395799,
             tilt: 0,
