@@ -36,18 +36,6 @@ class _ClusterMapState extends State<ClusterMap> {
               mapType: MapType.normal,
               markers: controller.marker,
             ),
-            /* DraggableScrollableSheet(
-              initialChildSize: 0.30,
-              minChildSize: 0.15,
-              builder: (BuildContext context, ScrollController scrollController) {
-                return SingleChildScrollView(
-                  controller: scrollController,
-                  child: Container(
-                    height: 100.0,
-                  ),
-                );
-              },
-            ),*/
           ],
         ),
       ),
