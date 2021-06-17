@@ -21,10 +21,10 @@ class PolyGonMap extends StatelessWidget {
         builder: (controller) => GoogleMap(
           markers: controller.marker,
           myLocationEnabled: true,
-          mapType: MapType.hybrid,
+          mapType: MapType.normal,
           initialCameraPosition: CameraPosition(
-            target: LatLng(21.222290569123086, 72.83940025309943),
-            zoom: 17,
+            target: LatLng(21.22048664929032, 72.84977010446553),
+            zoom: 12,
           ),
           onMapCreated: (GoogleMapController mapController) {
             controller.googleMapController = mapController;

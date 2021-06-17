@@ -98,7 +98,7 @@ class _GoogleMapDemoState extends State<GoogleMapDemo> {
     Uint8List imageData = await getMarker();
     this.setState(() {
       marker = Marker(
-          markerId: MarkerId("home"),
+          markerId: MarkerId("ho me"),
           position: latLng!,
           draggable: false,
           zIndex: 2,

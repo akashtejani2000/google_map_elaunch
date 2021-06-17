@@ -260,11 +260,13 @@ class _MapViewState extends State<MapView> {
   ) async {
     polylinePoints = PolylinePoints();
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      "Api key", // Google Maps API Key
+      "", // Google Maps API Key
       PointLatLng(startLatitude, startLongitude),
       PointLatLng(destinationLatitude, destinationLongitude),
-      travelMode: TravelMode.transit,
+      travelMode: TravelMode.driving,
     );
+
+    print("resultPoint =>$result");
 
     if (result.points.isNotEmpty) {
       result.points.forEach((PointLatLng point) {
@@ -286,6 +288,7 @@ class _MapViewState extends State<MapView> {
   void initState() {
     super.initState();
     _getCurrentLocation();
+    print("aaak");
   }
 
   @override
